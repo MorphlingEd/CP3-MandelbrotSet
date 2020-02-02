@@ -1,39 +1,63 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import math 
-a = 3.0
-b = 1.0
 
-def myPalette(x,y):
-    return x**2+y**2
-vcalc_z = np.vectorize(myPalette)
-pointNum = 500
-X = np.linspace(-2.025, 0.6, pointNum+1)
-Y = np.linspace(-1.125, 1.125, pointNum+1)
-maxDis = math.sqrt((X.max() - X.min())**2 + (Y.max()-Y.min())**2)
+class mandelbrot(object):
+    
+    def __init__(self,width = 800, height = 600,maxIter = 255):
+        """Initialize the picture's width,height and max times of iteration"""
+        xmin = -2.025
+        xmax = 0.6
+        ymin = -1.125
+        ymax = 1.125
+        self.width = 800
+        self.height = 600
+        self.maxIter = 255
+        self.X = np.linspace(xmin,xmax,self.width)
+        self.Y = np.linspace(ymin,ymax,self.height)
 
-def isInMS(x,y):
-    count = 0
-    xn = 0
-    yn = 0
-    N = 2000
-    for n in range(0,N):
-        xn = xn**2 - yn**2 + x
-        yn = 2*xn*yn + y
-        length = math.sqrt(xn**2+yn**2)
-        count += 1
-        if (length  > 2):
-            break
-    if (count < N):
-        return length / maxDis
-    else:
+
+    def mandelbrot_point(self,c):
+        """ method used to determine whether this point belongs to mandelbrot set
+        If so returns 0, otherwise return the iteration times"""
+        z = 0
+        for n in range(self.maxIter):
+            if (abs(z) > 2) :
+                return n/self.maxIter
+            z = z*z + c
         return 0
-apply = np.vectorize(isInMS)
+    
+    
+    def mandelbrot_set(self):
+        """method to determine each point's value in the picture applying
+        mandelbrot_point to each point and creates a new 2D array"""
+        Z = np.empty((self.width,self.height))
+        for i in range(self.width):
+            for j in range(self.height):
+                Z[i,j] = self.mandelbrot_point(self.X[i] + 1j * self.Y[j])
+        return Z
+    
+    def run(self):
+        """method to generate the pciture"""
+        X = self.X
+        Y = self.Y
+        Z = self.mandelbrot_set()
 
-XX, YY = np.meshgrid(X, Y)
-Z = apply(XX,YY)
-plt.imshow(Z, extent=(X.min(), X.max(), Y.min(), Y.max()))
-plt.title('Mandelbrot Set')
-plt.xlabel('x')
-plt.ylabel('y')
-plt.show()
+        """Using imshow method to color each pixel depending on this point's value returned
+        from mandelbrot_point method"""
+        plt.imshow(Z.T,extent = (X.min(),X.max(),Y.min(),Y.max()))
+        plt.title('Mandelbrot Set')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.show()
+    
+
+def main():
+    m = mandelbrot()
+    m.run()
+
+
+main()
+    
+    
+
